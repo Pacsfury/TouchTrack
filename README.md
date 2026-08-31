@@ -71,6 +71,6 @@ ERROR: red
 FATAL: black (red background)
 ```
 
-These colors are intended for easily recognizing the level, and making finding error logs, specially FATAL ones really easier.
+These colors are intended for easily recognizing the level, and making finding error messages, specially FATAL ones really easier.
 
-![alt text](img/image.png)
+![Log Terminal ANSI colors](img/image.png)
