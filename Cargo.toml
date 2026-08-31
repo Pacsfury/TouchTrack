@@ -1,5 +1,5 @@
 [package]
-name = "TouchTrack Logger"
+name = "TouchTrackLogger"
 version = "0.0.1"
 edition = "2024"
 authors = ["Pacsfury"]

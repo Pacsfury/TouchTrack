@@ -72,3 +72,5 @@ FATAL: black (red background)
 ```
 
 These colors are intended for easily recognizing the level, and making finding error logs, specially FATAL ones really easier.
+
+![alt text](img/image.png)
