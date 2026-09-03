@@ -58,6 +58,7 @@ Ok(())
 Follows the structure:
 ```
 TIME [LEVEL]: TEXT @ FILE:LINE
+2026-08-31 16:02:06 [FATAL]: Welcome @ src\main.rs:13
 ```
 
 ### Reading from terminal
