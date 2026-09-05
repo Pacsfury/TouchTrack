@@ -81,5 +81,7 @@ These colors are intended for easily recognizing the level, and making finding e
 Use `log_setflag(k, v)` for setting a flag.
 
 `debug` : If this flag is true, all debug messages will be show. Otherwise, they won't.  _Default: `"true"`_
+
 `disk` : If this flag is true, log will be also saved at a file (needs log_setoutfile()). Otherwise, it won't.  _Default: `"true"`_
+
 `ansi` : If this flag is true, terminal output will be ansi-coloured. Otherwise, it won't.  _Default: `"true"`_
