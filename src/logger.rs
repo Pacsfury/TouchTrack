@@ -38,7 +38,12 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
             return;
         }
     }
-    let time  = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+
+    let mut time = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+
+    if let Some(flag) = getflags().get("precise") && flag == "true" {
+        time = Local::now().format("%Y-%m-%d %H:%M:%S%.3f").to_string();
+    }
     
     let strlevel = match level {
         Levels::Debug => "DEBUG",
@@ -64,11 +69,21 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
 
     println!("{ansicolor}{time} [{strlevel}]: {message}\x1b[0m @ {macro_file}:{macro_line}\n");
 
-    if let Some(mutex) = LOG_FILE.get() && let Some(flag) = getflags().get("disk") && flag == "true" {
-        if let Ok(mut file) = mutex.lock() {
-            let _ = writeln!(file, "{time} [{strlevel}]: {message} @ {macro_file}:{macro_line}");
-        }
+    let write_to_disk = getflags().get("disk").map(|f| f == "true").unwrap_or(false);
+
+    if write_to_disk {
+        std::thread::scope(|s| {
+            s.spawn(move || {
+                if let Some(mutex) = LOG_FILE.get() {
+                    if let Ok(mut file) = mutex.lock() {
+                        let _ = writeln!(file, "{time} [{strlevel}]: {message} @ {macro_file}:{macro_line}");
+                    }
+                }
+            });
+        });
     }
+
+
 }
 
 pub fn log_setoutfile(outputfile: File) {

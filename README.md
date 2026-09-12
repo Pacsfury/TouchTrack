@@ -61,6 +61,8 @@ TIME [LEVEL]: TEXT @ FILE:LINE
 2026-08-31 16:02:06 [FATAL]: Welcome @ src\main.rs:13
 ```
 
+The file gets written in another thread to not stop the execution of the program.
+
 ### Reading from terminal
 
 Follows the same structure, but in terminal it's ANSI-coloured following this code:
@@ -85,3 +87,5 @@ Use `log_setflag(k, v)` for setting a flag.
 `disk` : If this flag is true, log will be also saved at a file (needs log_setoutfile()). Otherwise, it won't.  _Default: `"true"`_
 
 `ansi` : If this flag is true, terminal output will be ansi-coloured. Otherwise, it won't.  _Default: `"true"`_
+
+`precise` : Shows the ms using format `H:M:S.ms`. _Default: `"false"`_

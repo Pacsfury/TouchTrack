@@ -8,10 +8,24 @@ fn main() -> std::io::Result<()> {
     log_setflag("debug", "true");
     log_setflag("disk", "true");
     log_setflag("ansi", "true");
+    log_setflag("precise", "true");
     
     log!(Levels::Info, "Started logging session");
     log!(Levels::Debug, "This is the last debug message you will see");
     log_setflag("debug", "false");
+    log!(Levels::Info, "Starting a lot of messages to test speed...");
+    log!(Levels::Warning, "This is a warning");
+    log!(Levels::Debug, "This will be hided");
+    log!(Levels::Error, "{} went wrong", "Something");
+    log!(Levels::Warning, "This is a warning");
+    log!(Levels::Debug, "This will be hided");
+    log!(Levels::Error, "{} went wrong", "Something");
+    log!(Levels::Warning, "This is a warning");
+    log!(Levels::Debug, "This will be hided");
+    log!(Levels::Error, "{} went wrong", "Something");
+    log!(Levels::Warning, "This is a warning");
+    log!(Levels::Debug, "This will be hided");
+    log!(Levels::Error, "{} went wrong", "Something");
     log!(Levels::Warning, "This is a warning");
     log!(Levels::Debug, "This will be hided");
     log!(Levels::Error, "{} went wrong", "Something");
