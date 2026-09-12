@@ -1,6 +1,6 @@
 mod logger;
 use std::fs::File;
-use crate::logger::{internal_log, log_setoutfile, Levels, log_setflag, log_getflag};
+use crate::logger::{internal_log, log_setoutfile, Levels, log_setflag, log_getflag, log_getstats};
 
 fn main() -> std::io::Result<()> {
     let outputfile = File::create("log.txt")?;
@@ -31,6 +31,7 @@ fn main() -> std::io::Result<()> {
     log!(Levels::Debug, "This will be hided");
     log!(Levels::Error, "{} went wrong", "Something");
     log!(Levels::Fatal, "Ending logging showcase session");
-    
+    log_getstats(true);
+    log_getstats(false);
     Ok(())
 }

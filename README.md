@@ -44,6 +44,27 @@ Put your program logic here.
 Ok(())
 ```
 
+## Getting stats
+
+Use `log_getstats(true)` for verbose stats.
+
+```
+Debug: 1
+Info: 3
+Warning: 5
+Error: 5
+Fatal: 1
+```
+
+The text is coloured as the message of that levels.
+
+Use `log_getstats(false)` for plain stats.
+```
+1 3 5 5 1
+```
+
+No colors and no bloat.
+
 ## Reading it
 
 ### Reading from the file

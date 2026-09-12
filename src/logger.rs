@@ -23,6 +23,11 @@ pub enum Levels {
     Fatal   = 4
 }
 
+static mut CDEBUG: i32 = 0;
+static mut CINFO: i32 = 0;
+static mut CWARNING: i32 = 0;
+static mut CERROR: i32 = 0;
+static mut CFATAL: i32 = 0;
 
 #[macro_export]
 macro_rules! log {
@@ -70,6 +75,13 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
                 return;
             }
         }
+    }
+    match level {
+        Levels::Debug => unsafe { CDEBUG += 1; },
+        Levels::Info => unsafe { CINFO += 1; },
+        Levels::Warning => unsafe { CWARNING += 1; },
+        Levels::Error => unsafe { CERROR += 1; },
+        Levels::Fatal => unsafe { CFATAL += 1; },
     }
 
     if let Some(flag) = ignore_flag {
@@ -120,6 +132,7 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
         ansicolor = "";
     }
 
+
     println!("{ansicolor}{time} [{strlevel}]: {message}\x1b[0m @ {macro_file}:{macro_line}\n");
 
     let write_to_disk = disk_flag.map(|f| f == "true").unwrap_or(false);
@@ -151,4 +164,18 @@ pub fn log_setflag(key: &str, value: &str) {
 pub fn log_getflag(key: &str) -> Option<String> {
     let flags = getflags();
     return flags.get(key).cloned();
+}
+
+pub fn log_getstats(verbose: bool) {
+    if verbose {
+        let (debug, info, warning, error, fatal) = unsafe {
+            (CDEBUG, CINFO, CWARNING, CERROR, CFATAL)
+        };
+        println!("\x1b[0mDebug: {}\n\x1b[36mInfo: {}\n\x1b[33mWarning: {}\n\x1b[31mError: {}\n\x1b[101m\x1b[30mFatal: {}\x1b[0m\n\n", debug, info, warning, error, fatal);
+    } else {
+        let (debug, info, warning, error, fatal) = unsafe {
+            (CDEBUG, CINFO, CWARNING, CERROR, CFATAL)
+        };
+        println!("{} {} {} {} {}", debug, info, warning, error, fatal);
+    }
 }
