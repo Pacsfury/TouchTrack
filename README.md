@@ -9,7 +9,7 @@ A simple logger written in Rust.
 ```rust
 mod logger;
 use std::fs::File;
-use crate::logger::{internal_log, log_setoutfile, Levels};
+use crate::logger::{internal_log, log_setoutfile, Levels, log_setflag, log_getflag};
 ```
 Make sure to have this in your `Cargo.toml`:
 ```

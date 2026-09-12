@@ -147,3 +147,8 @@ pub fn log_setoutfile(outputfile: File) {
 pub fn log_setflag(key: &str, value: &str) {
     getflags().insert(key.to_string(), value.to_string());
 }
+
+pub fn log_getflag(key: &str) -> Option<String> {
+    let flags = getflags();
+    return flags.get(key).cloned();
+}
