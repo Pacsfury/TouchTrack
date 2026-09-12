@@ -8,7 +8,6 @@ fn main() -> std::io::Result<()> {
     log_setflag("debug", "true");
     log_setflag("disk", "true");
     log_setflag("ansi", "true");
-    log_setflag("precise", "true");
     
     log!(Levels::Info, "Started logging session");
     log!(Levels::Debug, "This is the last debug message you will see");

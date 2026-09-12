@@ -89,3 +89,17 @@ Use `log_setflag(k, v)` for setting a flag.
 `ansi` : If this flag is true, terminal output will be ansi-coloured. Otherwise, it won't.  _Default: `"true"`_
 
 `precise` : Shows the ms using format `H:M:S.ms`. _Default: `"false"`_
+
+`datetime` : Shows the date and time. If false, they get hidden. _Default: `"true"`
+
+`ignore` : Ignores the level and all below:
+```
+4 => ignores all
+3 => all except fatal
+2 => all except fatal and error
+1 => all except fatal and error and warning
+0 => shows all
+```
+This flag has no power over debug, which has it's own flag.
+
+_Default: `"0"`_
