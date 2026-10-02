@@ -111,7 +111,7 @@ Use `log_setflag(k, v)` for setting a flag.
 
 `precise` : Shows the ms using format `H:M:S.ms`. _Default: `"false"`_
 
-`datetime` : Shows the date and time. If false, they get hidden. _Default: `"true"`
+`datetime` : Shows the date and time. If false, they get hidden. _Default: `"true"`_
 
 `ignore` : Ignores the level and all below:
 ```
