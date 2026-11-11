@@ -51,10 +51,8 @@ fn test_counters() {
 #[test]
 fn test_file() {
     let _guard = TEST_LOCK.lock().unwrap();
-    let path = std::env::temp_dir().join(format!(
-        "touchtrack_logger_test_{}.log",
-        std::process::id()
-    ));
+    let path =
+        std::env::temp_dir().join(format!("touchtrack_logger_test_{}.log", std::process::id()));
     let outputfile = File::create(&path).unwrap();
     log_setoutfile(outputfile);
     log_settarget("file-test");
