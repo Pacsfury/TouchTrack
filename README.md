@@ -99,6 +99,24 @@ These colors are intended for easily recognizing the level, and making finding e
 
 ![Log Terminal ANSI colors](img/image.png)
 
+## Targets
+
+You can use **targets** to speify from _where_ a message is coming like this.
+
+`backend.rs`
+```rust
+log_settarget("backend");
+log!(Levels::Info, "Server initialized"); // <backend> TIME [INFO]: Server initialized @ backend.rs:15
+```
+
+
+`frontend.rs`
+```rust
+log_settarget("frontend");
+log!(Levels::Info, "Client initialized"); // <backend> TIME [INFO]: Client initialized @ frontend.rs:15
+```
+
+
 ## Flags
 
 Use `log_setflag(k, v)` for setting a flag.

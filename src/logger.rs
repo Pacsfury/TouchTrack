@@ -29,6 +29,9 @@ static mut CWARNING: i32 = 0;
 static mut CERROR: i32 = 0;
 static mut CFATAL: i32 = 0;
 
+static TARGET: OnceLock<Mutex<String>> = OnceLock::new();
+
+
 #[macro_export]
 macro_rules! log {
     ($level:expr, $($arg:tt)*) => {{
@@ -131,9 +134,14 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
     } else {
         ansicolor = "";
     }
+    let dtarget = if let Some(mutex) = TARGET.get() {
+        let target_str = mutex.lock().unwrap();
+        format!("<{}> ", *target_str)
+    } else {
+        String::from("")
+    };
 
-
-    println!("{ansicolor}{time} [{strlevel}]: {message}\x1b[0m @ {macro_file}:{macro_line}\n");
+    println!("{ansicolor}{dtarget}{time} [{strlevel}]: {message}\x1b[0m @ {macro_file}:{macro_line}\n");
 
     let write_to_disk = disk_flag.map(|f| f == "true").unwrap_or(false);
 
@@ -142,7 +150,7 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
             s.spawn(move || {
                 if let Some(mutex) = LOG_FILE.get() {
                     if let Ok(mut file) = mutex.lock() {
-                        let _ = writeln!(file, "{time} [{strlevel}]: {message} @ {macro_file}:{macro_line}");
+                        let _ = writeln!(file, "{dtarget}{time} [{strlevel}]: {message} @ {macro_file}:{macro_line}");
                     }
                 }
             });
@@ -164,6 +172,11 @@ pub fn log_setflag(key: &str, value: &str) {
 pub fn log_getflag(key: &str) -> Option<String> {
     let flags = getflags();
     return flags.get(key).cloned();
+}
+
+pub fn log_settarget(newtarget: &str) {
+    let mutex = TARGET.get_or_init(|| Mutex::new(String::new()));
+    *mutex.lock().unwrap() = newtarget.to_string();
 }
 
 pub fn log_getstats(verbose: bool) {
