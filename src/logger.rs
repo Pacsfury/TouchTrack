@@ -25,6 +25,17 @@ pub enum Levels {
     Fatal = 4,
 }
 
+fn parse_level(value: &str) -> Option<Levels> {
+    match value.to_ascii_lowercase().as_str() {
+        "debug" => Some(Levels::Debug),
+        "info" => Some(Levels::Info),
+        "warning" | "warn" => Some(Levels::Warning),
+        "error" => Some(Levels::Error),
+        "fatal" => Some(Levels::Fatal),
+        _ => None,
+    }
+}
+
 static CDEBUG: AtomicUsize = AtomicUsize::new(0);
 static CINFO: AtomicUsize = AtomicUsize::new(0);
 static CWARNING: AtomicUsize = AtomicUsize::new(0);
@@ -98,12 +109,12 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
         }
     }
 
-    if let Some(flag) = ignore_flag {
-        if let Ok(ignore_value) = flag.parse::<i32>() {
-            if ignore_value > 0 && (level as i32) > 0 && (level as i32) <= ignore_value {
-                return;
-            }
-        }
+    if ignore_flag
+        .as_deref()
+        .and_then(parse_level)
+        .is_some_and(|minimum| level < minimum)
+    {
+        return;
     }
 
     let mut time = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();

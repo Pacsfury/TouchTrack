@@ -133,14 +133,10 @@ Use `log_setflag(k, v)` for setting a flag.
 
 `datetime` : Shows the date and time. If false, they get hidden. _Default: `"true"`_
 
-`ignore` : Ignores the level and all below:
-```
-4 => ignores all
-3 => all except fatal
-2 => all except fatal and error
-1 => all except fatal and error and warning
-0 => shows all
-```
-This flag has no power over debug, which has it's own flag.
+`ignore` : Sets the minimum level to show. Levels below it are ignored; the selected level and higher levels are logged. Accepted values are `"debug"`, `"info"`, `"warning"` (or `"warn"`), `"error"`, and `"fatal"`. For example, `"warning"` logs warnings, errors, and fatal messages.
 
-_Default: `"0"`_
+```rust
+log_setflag("ignore", "warning");
+```
+
+If unset or set to an unrecognized value, no minimum-level filtering is applied. The `debug` flag can still disable debug messages separately.
