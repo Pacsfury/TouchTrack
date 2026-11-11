@@ -220,3 +220,14 @@ pub fn log_getstats(verbose: bool) {
         println!("{} {} {} {} {}", debug, info, warning, error, fatal);
     }
 }
+
+#[cfg(test)]
+pub(crate) fn log_stats_snapshot() -> [usize; 5] {
+    [
+        CDEBUG.load(Ordering::Relaxed),
+        CINFO.load(Ordering::Relaxed),
+        CWARNING.load(Ordering::Relaxed),
+        CERROR.load(Ordering::Relaxed),
+        CFATAL.load(Ordering::Relaxed),
+    ]
+}

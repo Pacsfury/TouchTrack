@@ -1,4 +1,6 @@
 mod logger;
+#[cfg(test)]
+mod test;
 use crate::logger::{
     Levels, internal_log, log_getflag, log_getstats, log_setflag, log_setoutfile, log_settarget,
 };
