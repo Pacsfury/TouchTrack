@@ -1,7 +1,8 @@
 use chrono::Local;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
-use std::collections::HashMap;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Mutex, OnceLock};
 
 static LOG_FILE: OnceLock<Mutex<File>> = OnceLock::new();
@@ -9,28 +10,28 @@ static LOG_FILE: OnceLock<Mutex<File>> = OnceLock::new();
 pub static FLAGS: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
 
 fn getflags() -> std::sync::MutexGuard<'static, HashMap<String, String>> {
-    FLAGS.get_or_init(|| Mutex::new(HashMap::new()))
+    FLAGS
+        .get_or_init(|| Mutex::new(HashMap::new()))
         .lock()
         .unwrap()
 }
 
 #[derive(Copy, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub enum Levels {
-    Debug   = 0,
-    Info    = 1,
+    Debug = 0,
+    Info = 1,
     Warning = 2,
-    Error   = 3,
-    Fatal   = 4
+    Error = 3,
+    Fatal = 4,
 }
 
-static mut CDEBUG: i32 = 0;
-static mut CINFO: i32 = 0;
-static mut CWARNING: i32 = 0;
-static mut CERROR: i32 = 0;
-static mut CFATAL: i32 = 0;
+static CDEBUG: AtomicUsize = AtomicUsize::new(0);
+static CINFO: AtomicUsize = AtomicUsize::new(0);
+static CWARNING: AtomicUsize = AtomicUsize::new(0);
+static CERROR: AtomicUsize = AtomicUsize::new(0);
+static CFATAL: AtomicUsize = AtomicUsize::new(0);
 
 static TARGET: OnceLock<Mutex<String>> = OnceLock::new();
-
 
 #[macro_export]
 macro_rules! log {
@@ -46,27 +47,27 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
         let flags = getflags();
         flags.get("debug").cloned()
     };
-    
+
     let ignore_flag = {
         let flags = getflags();
         flags.get("ignore").cloned()
     };
-    
+
     let precise_flag = {
         let flags = getflags();
         flags.get("precise").cloned()
     };
-    
+
     let datetime_flag = {
         let flags = getflags();
         flags.get("datetime").cloned()
     };
-    
+
     let ansi_flag = {
         let flags = getflags();
         flags.get("ansi").cloned()
     };
-    
+
     let disk_flag = {
         let flags = getflags();
         flags.get("disk").cloned()
@@ -80,11 +81,21 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
         }
     }
     match level {
-        Levels::Debug => unsafe { CDEBUG += 1; },
-        Levels::Info => unsafe { CINFO += 1; },
-        Levels::Warning => unsafe { CWARNING += 1; },
-        Levels::Error => unsafe { CERROR += 1; },
-        Levels::Fatal => unsafe { CFATAL += 1; },
+        Levels::Debug => {
+            CDEBUG.fetch_add(1, Ordering::Relaxed);
+        }
+        Levels::Info => {
+            CINFO.fetch_add(1, Ordering::Relaxed);
+        }
+        Levels::Warning => {
+            CWARNING.fetch_add(1, Ordering::Relaxed);
+        }
+        Levels::Error => {
+            CERROR.fetch_add(1, Ordering::Relaxed);
+        }
+        Levels::Fatal => {
+            CFATAL.fetch_add(1, Ordering::Relaxed);
+        }
     }
 
     if let Some(flag) = ignore_flag {
@@ -108,22 +119,22 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
             time = "".to_string();
         }
     }
-    
+
     let strlevel = match level {
         Levels::Debug => "DEBUG",
-        Levels::Info  => "INFO",
+        Levels::Info => "INFO",
         Levels::Warning => "WARNING",
         Levels::Error => "ERROR",
         Levels::Fatal => "FATAL",
     };
-    
+
     let ansicolor;
-    
+
     if let Some(flag) = ansi_flag {
         if flag == "true" {
             ansicolor = match level {
                 Levels::Debug => "\x1b[0m",
-                Levels::Info  => "\x1b[36m",
+                Levels::Info => "\x1b[36m",
                 Levels::Warning => "\x1b[33m",
                 Levels::Error => "\x1b[31m",
                 Levels::Fatal => "\x1b[101m\x1b[30m",
@@ -141,7 +152,9 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
         String::from("")
     };
 
-    println!("{ansicolor}{dtarget}{time} [{strlevel}]: {message}\x1b[0m @ {macro_file}:{macro_line}\n");
+    println!(
+        "{ansicolor}{dtarget}{time} [{strlevel}]: {message}\x1b[0m @ {macro_file}:{macro_line}\n"
+    );
 
     let write_to_disk = disk_flag.map(|f| f == "true").unwrap_or(false);
 
@@ -150,14 +163,15 @@ pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: 
             s.spawn(move || {
                 if let Some(mutex) = LOG_FILE.get() {
                     if let Ok(mut file) = mutex.lock() {
-                        let _ = writeln!(file, "{dtarget}{time} [{strlevel}]: {message} @ {macro_file}:{macro_line}");
+                        let _ = writeln!(
+                            file,
+                            "{dtarget}{time} [{strlevel}]: {message} @ {macro_file}:{macro_line}"
+                        );
                     }
                 }
             });
         });
     }
-
-
 }
 
 pub fn log_setoutfile(outputfile: File) {
@@ -180,15 +194,18 @@ pub fn log_settarget(newtarget: &str) {
 }
 
 pub fn log_getstats(verbose: bool) {
+    let debug = CDEBUG.load(Ordering::Relaxed);
+    let info = CINFO.load(Ordering::Relaxed);
+    let warning = CWARNING.load(Ordering::Relaxed);
+    let error = CERROR.load(Ordering::Relaxed);
+    let fatal = CFATAL.load(Ordering::Relaxed);
+
     if verbose {
-        let (debug, info, warning, error, fatal) = unsafe {
-            (CDEBUG, CINFO, CWARNING, CERROR, CFATAL)
-        };
-        println!("\x1b[0mDebug: {}\n\x1b[36mInfo: {}\n\x1b[33mWarning: {}\n\x1b[31mError: {}\n\x1b[101m\x1b[30mFatal: {}\x1b[0m\n\n", debug, info, warning, error, fatal);
+        println!(
+            "\x1b[0mDebug: {}\n\x1b[36mInfo: {}\n\x1b[33mWarning: {}\n\x1b[31mError: {}\n\x1b[101m\x1b[30mFatal: {}\x1b[0m\n\n",
+            debug, info, warning, error, fatal
+        );
     } else {
-        let (debug, info, warning, error, fatal) = unsafe {
-            (CDEBUG, CINFO, CWARNING, CERROR, CFATAL)
-        };
         println!("{} {} {} {} {}", debug, info, warning, error, fatal);
     }
 }

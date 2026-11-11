@@ -1,6 +1,8 @@
 mod logger;
+use crate::logger::{
+    Levels, internal_log, log_getflag, log_getstats, log_setflag, log_setoutfile, log_settarget,
+};
 use std::fs::File;
-use crate::logger::{internal_log, log_setoutfile, Levels, log_setflag, log_getflag, log_getstats, log_settarget};
 
 fn main() -> std::io::Result<()> {
     let outputfile = File::create("log.txt")?;
@@ -9,8 +11,12 @@ fn main() -> std::io::Result<()> {
     log_setflag("disk", "true");
     log_setflag("ansi", "true");
     log_settarget("initializer");
-    
-    log!(Levels::Info, "Debug messages will be shown: {:?}", log_getflag("debug").unwrap());
+
+    log!(
+        Levels::Info,
+        "Debug messages will be shown: {:?}",
+        log_getflag("debug").unwrap()
+    );
 
     log!(Levels::Info, "Started logging session");
     log!(Levels::Debug, "This is the last debug message you will see");

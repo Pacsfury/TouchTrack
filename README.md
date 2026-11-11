@@ -65,6 +65,8 @@ Use `log_getstats(false)` for plain stats.
 
 No colors and no bloat.
 
+The per-level counters are atomic, so logging from multiple threads does not cause data races. When logging is active concurrently, a stats snapshot may include some messages that were logged while the counters were being read.
+
 ## Reading it
 
 ### Reading from the file
