@@ -1,9 +1,9 @@
 use crate::logger::{
-    Levels, internal_log, log_getflag, log_setflag, log_setoutfile, log_settarget,
+    Levels, internal_log, load_config, log_getflag, log_setflag, log_setoutfile, log_settarget,
     log_stats_snapshot,
 };
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::sync::Mutex;
 
 static TEST_LOCK: Mutex<()> = Mutex::new(());
@@ -80,4 +80,46 @@ fn test_flags() {
 
     assert_eq!(log_getflag("debug").as_deref(), Some("false"));
     assert_eq!(log_getflag("ignore").as_deref(), Some("warning"));
+}
+
+#[test]
+fn test_config() {
+    let _guard = TEST_LOCK.lock().unwrap();
+    let path = std::env::temp_dir().join(format!(
+        "touchtrack_logger_config_{}.conf",
+        std::process::id()
+    ));
+    let mut file = File::create(&path).unwrap();
+    writeln!(
+        file,
+        "# logger settings\n debug = false\nignore=warning\ncustom=value=with=equals\n; another comment"
+    )
+    .unwrap();
+    drop(file);
+
+    load_config(path.to_str().unwrap()).unwrap();
+
+    assert_eq!(log_getflag("debug").as_deref(), Some("false"));
+    assert_eq!(log_getflag("ignore").as_deref(), Some("warning"));
+    assert_eq!(log_getflag("custom").as_deref(), Some("value=with=equals"));
+    std::fs::remove_file(path).unwrap();
+}
+
+#[test]
+fn test_config_rejects_malformed_line_without_applying_partial_settings() {
+    let _guard = TEST_LOCK.lock().unwrap();
+    let path = std::env::temp_dir().join(format!(
+        "touchtrack_logger_invalid_config_{}.conf",
+        std::process::id()
+    ));
+    let mut file = File::create(&path).unwrap();
+    writeln!(file, "config_test_partial=should-not-be-set\ninvalid line").unwrap();
+    drop(file);
+
+    let error = load_config(path.to_str().unwrap()).unwrap_err();
+
+    assert_eq!(error.kind(), std::io::ErrorKind::InvalidData);
+    assert!(error.to_string().contains("line 2"));
+    assert_eq!(log_getflag("config_test_partial"), None);
+    std::fs::remove_file(path).unwrap();
 }

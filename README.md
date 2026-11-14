@@ -7,9 +7,12 @@ A simple logger written in Rust.
 
 1. Import needed things
 ```rust
+mod configreader;
 mod logger;
 use std::fs::File;
-use crate::logger::{internal_log, log_setoutfile, Levels, log_setflag, log_getflag};
+use crate::logger::{
+    internal_log, load_config, log_setoutfile, Levels, log_setflag, log_getflag,
+};
 ```
 Make sure to have this in your `Cargo.toml`:
 ```
@@ -140,3 +143,23 @@ log_setflag("ignore", "warning");
 ```
 
 If unset or set to an unrecognized value, no minimum-level filtering is applied. The `debug` flag can still disable debug messages separately.
+
+## Configuration file
+
+You can load flags from a configuration file instead of setting them individually:
+
+```rust
+load_config("touchtrack.conf")?;
+```
+
+The file uses one `key=value` pair per line. Blank lines and lines beginning with `#` or `;` are ignored. Whitespace around keys and values is trimmed, and values may contain `=` characters.
+
+```ini
+# Logger settings
+debug=true
+ansi=false
+datetime=true
+ignore=warning
+```
+
+`load_config` returns an I/O error if the file cannot be read or contains a non-empty, non-comment line that is not a valid `key=value` pair. Settings are applied only after the entire file parses successfully.

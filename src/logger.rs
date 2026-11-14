@@ -1,3 +1,4 @@
+use crate::configreader::internal_config_load;
 use chrono::Local;
 use std::collections::HashMap;
 use std::fs::File;
@@ -50,6 +51,12 @@ macro_rules! log {
         let message = format!($($arg)*);
         internal_log($level, &message, file!(), line!());
     }};
+}
+
+pub fn load_config(path: &str) -> std::io::Result<()> {
+    let flags = internal_config_load(path)?;
+    getflags().extend(flags);
+    Ok(())
 }
 
 pub fn internal_log(level: Levels, message: &str, macro_file: &str, macro_line: u32) {

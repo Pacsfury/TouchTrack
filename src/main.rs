@@ -1,17 +1,17 @@
+mod configreader;
 mod logger;
 #[cfg(test)]
 mod test;
 use crate::logger::{
-    Levels, internal_log, log_getflag, log_getstats, log_setflag, log_setoutfile, log_settarget,
+    Levels, internal_log, load_config, log_getflag, log_getstats, log_setflag, log_setoutfile,
+    log_settarget,
 };
 use std::fs::File;
 
 fn main() -> std::io::Result<()> {
+    load_config("touchtrack.conf")?;
     let outputfile = File::create("log.txt")?;
     log_setoutfile(outputfile);
-    log_setflag("debug", "true");
-    log_setflag("disk", "true");
-    log_setflag("ansi", "true");
     log_settarget("initializer");
 
     log!(
